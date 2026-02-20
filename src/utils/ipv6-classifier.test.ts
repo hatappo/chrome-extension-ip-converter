@@ -5,41 +5,41 @@ describe("classifyIPv6", () => {
 	it("グローバルユニキャストアドレスを正しく分類する", () => {
 		const result = classifyIPv6("2001:0db8:0000:0000:0000:0000:0000:0001");
 		expect(result).not.toBeNull();
-		expect(result?.type.toLowerCase()).toMatch(/グローバルユニキャスト/i);
+		expect(result?.type.toLowerCase()).toMatch(/global unicast/i);
 	});
 
 	it("リンクローカルアドレスを正しく分類する", () => {
 		const result = classifyIPv6("fe80:0000:0000:0000:0000:0000:0000:0001");
 		expect(result).not.toBeNull();
-		expect(result?.type.toLowerCase()).toMatch(/リンクローカル/i);
+		expect(result?.type.toLowerCase()).toMatch(/link-local/i);
 	});
 
 	it("ユニークローカルアドレスを正しく分類する", () => {
 		const result1 = classifyIPv6("fc00:0000:0000:0000:0000:0000:0000:0001");
 		expect(result1).not.toBeNull();
-		expect(result1?.type.toLowerCase()).toMatch(/ユニークローカル/i);
+		expect(result1?.type.toLowerCase()).toMatch(/unique local/i);
 
 		const result2 = classifyIPv6("fd00:0000:0000:0000:0000:0000:0000:0001");
 		expect(result2).not.toBeNull();
-		expect(result2?.type.toLowerCase()).toMatch(/ユニークローカル/i);
+		expect(result2?.type.toLowerCase()).toMatch(/unique local/i);
 	});
 
 	it("マルチキャストアドレスを正しく分類する", () => {
 		const result = classifyIPv6("ff02:0000:0000:0000:0000:0000:0000:0001");
 		expect(result).not.toBeNull();
-		expect(result?.type.toLowerCase()).toMatch(/マルチキャスト/i);
+		expect(result?.type.toLowerCase()).toMatch(/multicast/i);
 	});
 
 	it("ループバックアドレスを正しく分類する", () => {
 		const result = classifyIPv6("0000:0000:0000:0000:0000:0000:0000:0001");
 		expect(result).not.toBeNull();
-		expect(result?.type.toLowerCase()).toMatch(/ループバック/i);
+		expect(result?.type.toLowerCase()).toMatch(/loopback/i);
 	});
 
 	it("未指定アドレスを正しく分類する", () => {
 		const result = classifyIPv6("0000:0000:0000:0000:0000:0000:0000:0000");
 		expect(result).not.toBeNull();
-		expect(result?.type.toLowerCase()).toMatch(/未指定/i);
+		expect(result?.type.toLowerCase()).toMatch(/unspecified/i);
 	});
 
 	it("IPv4射影アドレスを正しく分類する", () => {

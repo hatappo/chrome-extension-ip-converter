@@ -3,7 +3,8 @@ import ipRegex from "ip-regex";
 import type { PlasmoCSConfig } from "plasmo";
 import { addSpacingToBits, formatBitsToLines, getBitColorClass } from "../utils/bit-formatting";
 import type { IPInfo } from "../utils/ip-address-common";
-import { detectAddressType, detectAndConvertIP } from "../utils/ip-address-common";
+import { detectAndConvertIP } from "../utils/ip-address-common";
+import { splitTextByIPAddresses } from "../utils/ip-text-segmentation";
 import "./content-style.css";
 
 export const config: PlasmoCSConfig = {
@@ -133,6 +134,7 @@ function createIPSpan(ipAddress: string, addressType: "ipv4" | "ipv6"): HTMLSpan
 	span.style.textDecorationStyle = "dotted";
 	span.setAttribute("data-ip", ipAddress);
 	span.setAttribute("data-ip-type", addressType);
+	span.setAttribute("data-ip-converted", "true");
 	return span;
 }
 
@@ -167,7 +169,7 @@ function setupTooltipHoverEvents(element: HTMLElement, tooltip: HTMLElement): vo
 
 function shouldSkipElement(element: Element): boolean {
 	if (
-		element.matches(".ipv6-tooltip, .ipv6-tooltip-context") ||
+		element.matches("[data-ip-converted='true'], .ipv6-tooltip, .ipv6-tooltip-context") ||
 		element.tagName === "SCRIPT" ||
 		element.tagName === "STYLE" ||
 		element.tagName === "NOSCRIPT" ||
@@ -181,67 +183,48 @@ function shouldSkipElement(element: Element): boolean {
 
 // テキストノードからIPアドレスを検出してホバー機能を追加する関数
 function processTextNode(textNode: Text): void {
-	const text = textNode.textContent;
-	if (!text) return;
-
-	// IPv4とIPv6の両方のパターンを検出
-	const ipPattern = ipRegex();
-	const matches = Array.from(text.matchAll(new RegExp(ipPattern.source, "g")));
-	if (matches.length === 0) return;
-
 	const parent = textNode.parentElement;
 	if (!parent) return;
 
 	if (shouldSkipElement(parent)) return;
 
-	// 既に処理済みかチェック
-	if (parent.hasAttribute("data-ip-processed")) return;
+	const text = textNode.textContent;
+	if (!text) return;
 
-	let currentText = text;
-	let offset = 0;
-
-	matches.forEach((match) => {
-		const ipAddress = match[0];
-		const startIndex = (match.index ?? 0) + offset;
-		const endIndex = startIndex + ipAddress.length;
-
-		// IPアドレスのタイプを判定
-		const addressType = detectAddressType(ipAddress);
-		if (addressType === "invalid") return;
-
-		// IPアドレスの前のテキスト
-		if (startIndex > 0) {
-			const beforeText = document.createTextNode(currentText.substring(0, startIndex));
-			parent.insertBefore(beforeText, textNode);
-		}
-
-		// IPアドレス部分をspanで囲む
-		const ipSpan = createIPSpan(ipAddress, addressType);
-
-		// ツールチップを作成
-		const ipInfo = detectAndConvertIP(ipAddress);
-		if (!ipInfo) return; // 変換に失敗した場合はスキップ
-
-		const tooltip = createTooltip(ipInfo);
-		ipSpan.appendChild(tooltip);
-
-		// ホバーイベントを設定
-		setupTooltipHoverEvents(ipSpan, tooltip);
-
-		parent.insertBefore(ipSpan, textNode);
-		currentText = currentText.substring(endIndex);
-		offset = 0;
-	});
-
-	// 残りのテキスト
-	if (currentText.length > 0) {
-		const remainingText = document.createTextNode(currentText);
-		parent.insertBefore(remainingText, textNode);
+	const segments = splitTextByIPAddresses(text);
+	if (!segments.some((segment) => segment.kind === "ip")) {
+		return;
 	}
 
-	// 元のテキストノードを削除
-	parent.removeChild(textNode);
-	parent.setAttribute("data-ipv6-processed", "true");
+	const fragment = document.createDocumentFragment();
+	let replaced = false;
+
+	for (const segment of segments) {
+		if (segment.kind === "text") {
+			if (segment.value.length > 0) {
+				fragment.appendChild(document.createTextNode(segment.value));
+			}
+			continue;
+		}
+
+		const ipInfo = detectAndConvertIP(segment.value);
+		if (!ipInfo) {
+			fragment.appendChild(document.createTextNode(segment.value));
+			continue;
+		}
+
+		const ipSpan = createIPSpan(segment.value, segment.addressType);
+		const tooltip = createTooltip(ipInfo);
+		ipSpan.appendChild(tooltip);
+		setupTooltipHoverEvents(ipSpan, tooltip);
+
+		fragment.appendChild(ipSpan);
+		replaced = true;
+	}
+
+	if (!replaced) return;
+
+	parent.replaceChild(fragment, textNode);
 }
 
 // DOMツリーを再帰的に処理する関数
@@ -263,13 +246,19 @@ function processNode(node: Node): void {
 
 // 処理済みの要素をクリアする関数
 function clearProcessedMarkers(): void {
-	const processedElements = document.querySelectorAll("[data-ip-processed]");
-	processedElements.forEach((element) => {
-		element.removeAttribute("data-ip-processed");
+	const convertedElements = document.querySelectorAll("[data-ip-converted='true']");
+	convertedElements.forEach((element) => {
+		const ipAddress = element.getAttribute("data-ip");
+		if (!ipAddress) {
+			element.remove();
+			return;
+		}
+
+		element.replaceWith(document.createTextNode(ipAddress));
 	});
 
-	// ツールチップも削除
-	const tooltips = document.querySelectorAll(".ipv6-tooltip");
+	// document.body 直下に追加するコンテキストメニュー由来のツールチップを削除
+	const tooltips = document.querySelectorAll(".ipv6-tooltip-context");
 	tooltips.forEach((tooltip) => {
 		tooltip.remove();
 	});
@@ -278,10 +267,10 @@ function clearProcessedMarkers(): void {
 // 初期化
 async function initializeIPConverter(): Promise<void> {
 	// 設定を確認
-	const autoScan = await storage.get("autoScan");
+	const autoScan = await storage.get<boolean>("autoScan");
 
 	// 自動スキャンが有効な場合のみ処理
-	if (autoScan === "true") {
+	if (autoScan === true) {
 		processNode(document.body);
 	}
 }

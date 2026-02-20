@@ -78,7 +78,7 @@ describe("detectAndConvertIP", () => {
 		expect(result?.type).toBe("ipv6");
 		expect(result?.binary).toContain(":");
 		// グローバルユニキャストアドレスとして分類される
-		expect(result?.classification?.type.toLowerCase()).toMatch(/グローバルユニキャスト/i);
+		expect(result?.classification?.type.toLowerCase()).toMatch(/global unicast/i);
 	});
 
 	it("無効なアドレスの場合nullを返す", () => {
