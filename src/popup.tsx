@@ -1,42 +1,51 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import "./extension-ui.css";
 import { BitDisplay } from "./components/BitDisplay";
-import { detectAndConvertIP } from "./utils/ip-address-common";
-import type { IPv6Classification } from "./utils/ipv6-classifier";
+import { MultiFormatTable } from "./components/MultiFormatTable";
+import { detectAndConvertIPWithCIDR, type IPInfo } from "./utils/ip-address-common";
+import { compressIPv6, normalizeIPv6 } from "./utils/ipv6-converter";
+import { getMultiFormatInfo } from "./utils/multi-format";
 
 function IndexPopup() {
 	const [inputValue, setInputValue] = useState("");
-	const [result, setResult] = useState("");
+	const [ipInfo, setIpInfo] = useState<IPInfo | null>(null);
 	const [error, setError] = useState("");
 	const [scanMessage, setScanMessage] = useState("");
-	const [classification, setClassification] = useState<IPv6Classification | undefined>();
+	const [normMode, setNormMode] = useState<"expanded" | "compressed">("compressed");
+
+	const normalizedAddress = useMemo(() => {
+		if (!ipInfo || ipInfo.type !== "ipv6") return null;
+		const expanded = normalizeIPv6(ipInfo.address);
+		return normMode === "expanded" ? expanded : compressIPv6(expanded);
+	}, [ipInfo, normMode]);
+
+	const multiFormatInfo = useMemo(() => {
+		if (!ipInfo) return null;
+		return getMultiFormatInfo(ipInfo.address, ipInfo.type);
+	}, [ipInfo]);
 
 	// Auto-convert when input changes
 	useEffect(() => {
 		if (!inputValue.trim()) {
-			setResult("");
+			setIpInfo(null);
 			setError("");
-			setClassification(undefined);
 			return;
 		}
 
-		const ipInfo = detectAndConvertIP(inputValue);
-		if (ipInfo) {
-			setResult(ipInfo.binary);
-			setClassification(ipInfo.classification);
+		const result = detectAndConvertIPWithCIDR(inputValue);
+		if (result) {
+			setIpInfo(result);
 			setError("");
 		} else {
-			setResult("");
-			setClassification(undefined);
-			setError("Please enter a valid IP address (IPv4 or IPv6)");
+			setIpInfo(null);
+			setError("Please enter a valid IP address (IPv4 or IPv6, with optional /prefix)");
 		}
 	}, [inputValue]);
 
 	const handleClear = () => {
 		setInputValue("");
-		setResult("");
+		setIpInfo(null);
 		setError("");
-		setClassification(undefined);
 	};
 
 	const handleScan = async () => {
@@ -76,7 +85,7 @@ function IndexPopup() {
 					type="text"
 					value={inputValue}
 					onChange={(e) => setInputValue(e.target.value)}
-					placeholder="e.g. 192.168.1.1 or 2001:db8::1"
+					placeholder="e.g. 192.168.1.0/24 or 2001:db8::1"
 					className="input-field"
 				/>
 			</div>
@@ -87,12 +96,47 @@ function IndexPopup() {
 
 			{error && <div className="error-message">{error}</div>}
 
+			{ipInfo && ipInfo.type === "ipv6" && normalizedAddress && (
+				<div className="normalization-section">
+					<div className="normalization-header">
+						<span className="normalization-label">Normalized:</span>
+						<div className="normalization-toggle">
+							<button
+								type="button"
+								className={`norm-btn ${normMode === "compressed" ? "norm-btn-active" : ""}`}
+								onClick={() => setNormMode("compressed")}
+							>
+								Compressed
+							</button>
+							<button
+								type="button"
+								className={`norm-btn ${normMode === "expanded" ? "norm-btn-active" : ""}`}
+								onClick={() => setNormMode("expanded")}
+							>
+								Expanded
+							</button>
+						</div>
+					</div>
+					<div className="normalization-value">{normalizedAddress}</div>
+				</div>
+			)}
+
 			<div className="result-container">
 				<div className="result-label">Binary Representation:</div>
 				<div className="result-box">
-					{result && <BitDisplay bits={result} variant="popup" classification={classification} />}
+					{ipInfo && (
+						<BitDisplay
+							bits={ipInfo.binary}
+							variant="popup"
+							classification={ipInfo.classification}
+							ipClassification={ipInfo.ipClassification}
+							prefixLength={ipInfo.prefixLength}
+						/>
+					)}
 				</div>
 			</div>
+
+			{multiFormatInfo && <MultiFormatTable info={multiFormatInfo} />}
 
 			<div className="scan-section">
 				<button type="button" onClick={handleScan} className="btn btn-scan">

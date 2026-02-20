@@ -1,4 +1,5 @@
 import ipRegex from "ip-regex";
+import { parseCIDR } from "./cidr-parser";
 import { detectAddressType } from "./ip-address-common";
 
 type IPAddressType = "ipv4" | "ipv6";
@@ -18,6 +19,7 @@ export type IPTextSegment = TextSegment | IPSegment;
 
 /**
  * Split text into "plain text" and "valid IP address" segments.
+ * Supports CIDR notation (e.g. "192.168.0.0/24").
  * Indices are based on the original string and order is preserved even with multiple IPs.
  */
 export function splitTextByIPAddresses(text: string): IPTextSegment[] {
@@ -46,12 +48,25 @@ export function splitTextByIPAddresses(text: string): IPTextSegment[] {
 			continue;
 		}
 
+		// Check if followed by CIDR prefix (e.g. /24)
+		let fullMatch = ipAddress;
+		const afterIp = startIndex + ipAddress.length;
+		const remaining = text.slice(afterIp);
+		const cidrSuffix = remaining.match(/^\/(\d{1,3})/);
+		if (cidrSuffix) {
+			const candidate = `${ipAddress}${cidrSuffix[0]}`;
+			const parsed = parseCIDR(candidate);
+			if (parsed.addressType !== "invalid") {
+				fullMatch = candidate;
+			}
+		}
+
 		if (startIndex > lastIndex) {
 			segments.push({ kind: "text", value: text.slice(lastIndex, startIndex) });
 		}
 
-		segments.push({ kind: "ip", value: ipAddress, addressType });
-		lastIndex = startIndex + ipAddress.length;
+		segments.push({ kind: "ip", value: fullMatch, addressType });
+		lastIndex = startIndex + fullMatch.length;
 	}
 
 	if (lastIndex < text.length) {

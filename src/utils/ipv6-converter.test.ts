@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { IPV6_PATTERN, ipv6ToBits, isValidIPv6, normalizeIPv6 } from "./ipv6-converter";
+import { compressIPv6, IPV6_PATTERN, ipv6ToBits, isValidIPv6, normalizeIPv6 } from "./ipv6-converter";
 
 describe("IPv6 Converter", () => {
 	describe("normalizeIPv6", () => {
@@ -80,6 +80,41 @@ describe("IPv6 Converter", () => {
 			expect(result).toBe(
 				"0010000000000001:0000110110111000:0000000000000000:0000000000000000:0011010001010110:0000000000000000:0000000000000000:0000000000000000",
 			);
+		});
+	});
+
+	describe("compressIPv6", () => {
+		it("should compress all-zeros to ::", () => {
+			expect(compressIPv6("0000:0000:0000:0000:0000:0000:0000:0000")).toBe("::");
+		});
+
+		it("should compress loopback to ::1", () => {
+			expect(compressIPv6("0000:0000:0000:0000:0000:0000:0000:0001")).toBe("::1");
+		});
+
+		it("should compress longest zero run", () => {
+			expect(compressIPv6("2001:0db8:0000:0000:0000:0000:0000:0001")).toBe("2001:db8::1");
+		});
+
+		it("should compress trailing zeros", () => {
+			expect(compressIPv6("2001:0db8:0000:0000:0000:0000:0000:0000")).toBe("2001:db8::");
+		});
+
+		it("should prefer first run when equal length", () => {
+			// 2001:0:0:1:0:0:0:1 — two runs of 2 and 3, pick the run of 3
+			expect(compressIPv6("2001:0000:0000:0001:0000:0000:0000:0001")).toBe("2001:0:0:1::1");
+		});
+
+		it("should not compress single zero groups", () => {
+			expect(compressIPv6("2001:0db8:0000:0001:0000:0001:0000:0001")).toBe("2001:db8:0:1:0:1:0:1");
+		});
+
+		it("should remove leading zeros from each group", () => {
+			expect(compressIPv6("2001:0db8:85a3:0000:0000:8a2e:0370:7334")).toBe("2001:db8:85a3::8a2e:370:7334");
+		});
+
+		it("should handle fe80::1", () => {
+			expect(compressIPv6("fe80:0000:0000:0000:0000:0000:0000:0001")).toBe("fe80::1");
 		});
 	});
 

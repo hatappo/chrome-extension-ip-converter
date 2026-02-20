@@ -1,10 +1,10 @@
 import { Storage } from "@plasmohq/storage";
-import ipRegex from "ip-regex";
 import type { PlasmoCSConfig } from "plasmo";
 import { addSpacingToBits, formatBitsToLines, getBitColorClass } from "../utils/bit-formatting";
 import type { IPInfo } from "../utils/ip-address-common";
-import { detectAndConvertIP } from "../utils/ip-address-common";
+import { detectAndConvertIPWithCIDR } from "../utils/ip-address-common";
 import { splitTextByIPAddresses } from "../utils/ip-text-segmentation";
+import { getMultiFormatInfo } from "../utils/multi-format";
 import "./content-style.css";
 
 export const config: PlasmoCSConfig = {
@@ -63,6 +63,16 @@ function createTooltip(ipInfo: IPInfo): HTMLElement {
 	labelDiv.textContent = label;
 	header.appendChild(labelDiv);
 
+	// Badge
+	if (ipInfo.ipClassification) {
+		const badge = document.createElement("span");
+		badge.className = `ip-badge ip-badge-${ipInfo.ipClassification.badge.toLowerCase()}`;
+		badge.textContent = ipInfo.ipClassification.badge;
+		header.appendChild(badge);
+	}
+
+	tooltip.appendChild(header);
+
 	// Classification info
 	if (ipInfo.classification) {
 		const classificationDiv = document.createElement("div");
@@ -71,19 +81,24 @@ function createTooltip(ipInfo: IPInfo): HTMLElement {
 			<div class="classification-type">${ipInfo.classification.type}</div>
 			${ipInfo.classification.description ? `<div class="classification-description">${ipInfo.classification.description}</div>` : ""}
 		`;
-
-		tooltip.appendChild(header);
 		tooltip.appendChild(classificationDiv);
-	} else {
-		tooltip.appendChild(header);
+	}
+
+	// Prefix length info
+	if (ipInfo.prefixLength != null) {
+		const prefixInfo = document.createElement("div");
+		prefixInfo.className = "prefix-info";
+		prefixInfo.innerHTML = `<span class="prefix-network">Network: /${ipInfo.prefixLength}</span><span class="prefix-separator">|</span><span class="prefix-host">Host: ${128 - ipInfo.prefixLength} bits</span>`;
+		tooltip.appendChild(prefixInfo);
 	}
 
 	// Bit display area
 	const bitsContainer = document.createElement("div");
 	bitsContainer.className = "tooltip-bits-container";
 	const lines = formatBitsToLines(ipInfo.binary);
+	let globalBitIndex = 0;
 
-	lines.forEach((line) => {
+	for (const line of lines) {
 		const lineDiv = document.createElement("div");
 		lineDiv.className = "tooltip-line";
 
@@ -93,19 +108,26 @@ function createTooltip(ipInfo: IPInfo): HTMLElement {
 
 		const bitsSpan = document.createElement("span");
 		bitsSpan.className = "tooltip-bits";
-		bitsSpan.innerHTML = addSpacingToBits(line.bits)
-			.split("")
-			.map((char) => {
-				if (char === " ") return char;
+
+		for (const char of addSpacingToBits(line.bits).split("")) {
+			if (char === " ") {
+				bitsSpan.appendChild(document.createTextNode(char));
+			} else {
+				const span = document.createElement("span");
 				const colorClass = getBitColorClass(char);
-				return colorClass ? `<span class="${colorClass}">${char}</span>` : char;
-			})
-			.join("");
+				const subnetClass =
+					ipInfo.prefixLength != null ? (globalBitIndex < ipInfo.prefixLength ? "bit-network" : "bit-host") : "";
+				span.className = `${colorClass} ${subnetClass}`.trim();
+				span.textContent = char;
+				bitsSpan.appendChild(span);
+				globalBitIndex++;
+			}
+		}
 
 		lineDiv.appendChild(lineNumber);
 		lineDiv.appendChild(bitsSpan);
 		bitsContainer.appendChild(lineDiv);
-	});
+	}
 
 	tooltip.appendChild(bitsContainer);
 
@@ -113,6 +135,49 @@ function createTooltip(ipInfo: IPInfo): HTMLElement {
 	const copyButton = createCopyButton(ipInfo.binary, ipInfo.type as "ipv4" | "ipv6");
 	copyButton.style.cssText = "";
 	tooltip.appendChild(copyButton);
+
+	// Multi-format table (collapsible)
+	const multiFormat = getMultiFormatInfo(ipInfo.address, ipInfo.type);
+	if (multiFormat) {
+		const details = document.createElement("details");
+		details.className = "multi-format-details";
+		const summary = document.createElement("summary");
+		summary.className = "multi-format-summary";
+		summary.textContent = "Multi-Format View";
+		details.appendChild(summary);
+
+		const createTable = (segments: typeof multiFormat.segments, label: string) => {
+			const block = document.createElement("div");
+			block.className = "multi-format-block";
+			const lbl = document.createElement("div");
+			lbl.className = "multi-format-label";
+			lbl.textContent = label;
+			block.appendChild(lbl);
+
+			const table = document.createElement("table");
+			table.className = "multi-format-table";
+			table.innerHTML = `<thead><tr><th>#</th><th>Dec</th><th>Hex</th><th>Binary</th></tr></thead>`;
+			const tbody = document.createElement("tbody");
+			for (const seg of segments) {
+				const tr = document.createElement("tr");
+				tr.innerHTML = `<td class="multi-format-index">${seg.index}</td><td>${seg.decimal}</td><td>${seg.hex}</td><td class="multi-format-binary">${seg.binary}</td>`;
+				tbody.appendChild(tr);
+			}
+			table.appendChild(tbody);
+			block.appendChild(table);
+			return block;
+		};
+
+		details.appendChild(
+			createTable(multiFormat.segments, multiFormat.segmentType === "octet" ? "IPv4 Octets" : "IPv6 Hextets"),
+		);
+
+		if (multiFormat.ipv4MappedSegments) {
+			details.appendChild(createTable(multiFormat.ipv4MappedSegments, "IPv4-Mapped IPv6"));
+		}
+
+		tooltip.appendChild(details);
+	}
 
 	return tooltip;
 }
@@ -200,7 +265,7 @@ function processTextNode(textNode: Text): void {
 			continue;
 		}
 
-		const ipInfo = detectAndConvertIP(segment.value);
+		const ipInfo = detectAndConvertIPWithCIDR(segment.value);
 		if (!ipInfo) {
 			fragment.appendChild(document.createTextNode(segment.value));
 			continue;
@@ -324,15 +389,13 @@ chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
 		processNode(document.body);
 		sendResponse({ success: true });
 	} else if (request.action === "convertSelection") {
-		// Detect IP address from selected text
+		// Detect IP address (with optional CIDR) from selected text
 		const text = request.text;
-		const ipPattern = ipRegex();
-		const matches = text.match(ipPattern);
+		const segments = splitTextByIPAddresses(text);
+		const ipSegment = segments.find((s) => s.kind === "ip");
 
-		if (matches && matches.length > 0) {
-			// Convert the first matched IP address
-			const ipAddress = matches[0];
-			const ipInfo = detectAndConvertIP(ipAddress);
+		if (ipSegment) {
+			const ipInfo = detectAndConvertIPWithCIDR(ipSegment.value);
 
 			if (ipInfo) {
 				// Show tooltip

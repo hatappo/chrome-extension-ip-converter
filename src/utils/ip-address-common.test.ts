@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { detectAddressType, detectAndConvertIP, ipAddressToBits, isValidIPAddress } from "./ip-address-common";
+import {
+	detectAddressType,
+	detectAndConvertIP,
+	detectAndConvertIPWithCIDR,
+	ipAddressToBits,
+	isValidIPAddress,
+} from "./ip-address-common";
 
 describe("detectAddressType", () => {
 	it("IPv4アドレスを正しく判定する", () => {
@@ -91,5 +97,47 @@ describe("detectAndConvertIP", () => {
 		const result = detectAndConvertIP("  192.168.1.1  ");
 		expect(result).not.toBeNull();
 		expect(result?.address).toBe("192.168.1.1");
+	});
+});
+
+describe("detectAndConvertIPWithCIDR", () => {
+	it("IPv4 CIDR表記を正しく処理する", () => {
+		const result = detectAndConvertIPWithCIDR("192.168.1.0/24");
+		expect(result).not.toBeNull();
+		expect(result?.address).toBe("192.168.1.0");
+		expect(result?.type).toBe("ipv4");
+		// IPv4 /24 → 128-bit space: 96 + 24 = 120
+		expect(result?.prefixLength).toBe(120);
+	});
+
+	it("IPv6 CIDR表記を正しく処理する", () => {
+		const result = detectAndConvertIPWithCIDR("2001:db8::/32");
+		expect(result).not.toBeNull();
+		expect(result?.address).toBe("2001:db8::");
+		expect(result?.type).toBe("ipv6");
+		expect(result?.prefixLength).toBe(32);
+	});
+
+	it("CIDR無しの場合prefixLengthがundefined", () => {
+		const result = detectAndConvertIPWithCIDR("10.0.0.1");
+		expect(result).not.toBeNull();
+		expect(result?.prefixLength).toBeUndefined();
+	});
+
+	it("無効なCIDR表記の場合nullを返す", () => {
+		expect(detectAndConvertIPWithCIDR("10.0.0.0/33")).toBeNull();
+		expect(detectAndConvertIPWithCIDR("invalid/24")).toBeNull();
+	});
+
+	it("IPv4 /0 を正しく処理する", () => {
+		const result = detectAndConvertIPWithCIDR("0.0.0.0/0");
+		expect(result).not.toBeNull();
+		expect(result?.prefixLength).toBe(96);
+	});
+
+	it("IPv4 /32 を正しく処理する", () => {
+		const result = detectAndConvertIPWithCIDR("10.0.0.1/32");
+		expect(result).not.toBeNull();
+		expect(result?.prefixLength).toBe(128);
 	});
 });

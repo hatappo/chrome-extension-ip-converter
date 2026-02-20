@@ -32,4 +32,22 @@ describe("splitTextByIPAddresses", () => {
 	it("空文字列では空配列を返す", () => {
 		expect(splitTextByIPAddresses("")).toEqual([]);
 	});
+
+	it("CIDR記法を含むIPv4を正しく分割する", () => {
+		const text = "network 192.168.0.0/24 here";
+		expect(splitTextByIPAddresses(text)).toEqual([
+			{ kind: "text", value: "network " },
+			{ kind: "ip", value: "192.168.0.0/24", addressType: "ipv4" },
+			{ kind: "text", value: " here" },
+		]);
+	});
+
+	it("CIDR記法を含むIPv6を正しく分割する", () => {
+		const text = "subnet 2001:db8::/32 end";
+		expect(splitTextByIPAddresses(text)).toEqual([
+			{ kind: "text", value: "subnet " },
+			{ kind: "ip", value: "2001:db8::/32", addressType: "ipv6" },
+			{ kind: "text", value: " end" },
+		]);
+	});
 });

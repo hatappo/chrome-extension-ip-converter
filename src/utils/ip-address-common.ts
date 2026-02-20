@@ -1,3 +1,5 @@
+import { parseCIDR, prefixLengthTo128BitSpace } from "./cidr-parser";
+import { classifyIP, type IPClassification } from "./ip-classifier";
 import { ipv4ToBits, isValidIPv4 } from "./ipv4-converter";
 import { classifyIPv6, type IPv6Classification } from "./ipv6-classifier";
 import { ipv6ToBits, isValidIPv6, normalizeIPv6 } from "./ipv6-converter";
@@ -9,6 +11,8 @@ export interface IPInfo {
 	type: AddressType;
 	binary: string;
 	classification?: IPv6Classification;
+	ipClassification?: IPClassification;
+	prefixLength?: number;
 }
 
 /**
@@ -92,22 +96,48 @@ export function detectAndConvertIP(address: string): IPInfo | null {
 		if (type === "ipv4") {
 			// Convert IPv4 to IPv4-mapped IPv6 format
 			const octets = trimmedAddress.split(".");
-			const hex1 = (parseInt(octets[0]) * 256 + parseInt(octets[1])).toString(16).padStart(4, "0");
-			const hex2 = (parseInt(octets[2]) * 256 + parseInt(octets[3])).toString(16).padStart(4, "0");
+			const hex1 = (parseInt(octets[0], 10) * 256 + parseInt(octets[1], 10)).toString(16).padStart(4, "0");
+			const hex2 = (parseInt(octets[2], 10) * 256 + parseInt(octets[3], 10)).toString(16).padStart(4, "0");
 			normalized = `0000:0000:0000:0000:0000:ffff:${hex1}:${hex2}`;
 		} else {
 			normalized = normalizeIPv6(trimmedAddress);
 		}
 
 		const classification = classifyIPv6(normalized);
+		const ipClassification = classifyIP(trimmedAddress, type, normalized);
 
 		return {
 			address: trimmedAddress,
 			type,
 			binary,
 			classification: classification || undefined,
+			ipClassification: ipClassification || undefined,
 		};
 	} catch (_error) {
 		return null;
 	}
+}
+
+/**
+ * Detect and convert an IP address with CIDR notation support.
+ * Accepts "192.168.1.0/24" or plain "192.168.1.1".
+ * @param input - IP address string, optionally with /prefix
+ * @returns IPInfo object with prefixLength in 128-bit space, or null when invalid
+ */
+export function detectAndConvertIPWithCIDR(input: string): IPInfo | null {
+	const cidr = parseCIDR(input);
+	if (cidr.addressType === "invalid") {
+		return null;
+	}
+
+	const ipInfo = detectAndConvertIP(cidr.address);
+	if (!ipInfo) {
+		return null;
+	}
+
+	if (cidr.prefixLength != null) {
+		ipInfo.prefixLength = prefixLengthTo128BitSpace(cidr.prefixLength, cidr.addressType);
+	}
+
+	return ipInfo;
 }

@@ -51,6 +51,54 @@ export function ipv6ToBits(ipv6: string): string {
 }
 
 /**
+ * Compress a normalized IPv6 address per RFC 5952.
+ * - Remove leading zeros from each group
+ * - Replace the longest run of consecutive all-zero groups with ::
+ * - If equal-length runs, use the first one
+ * - A single zero group is NOT compressed
+ */
+export function compressIPv6(normalized: string): string {
+	const groups = normalized.split(":").map((g) => g.replace(/^0+/, "") || "0");
+
+	// Find the longest run of consecutive "0" groups
+	let bestStart = -1;
+	let bestLen = 0;
+	let curStart = -1;
+	let curLen = 0;
+
+	for (let i = 0; i < groups.length; i++) {
+		if (groups[i] === "0") {
+			if (curStart === -1) {
+				curStart = i;
+				curLen = 1;
+			} else {
+				curLen++;
+			}
+			if (curLen > bestLen) {
+				bestStart = curStart;
+				bestLen = curLen;
+			}
+		} else {
+			curStart = -1;
+			curLen = 0;
+		}
+	}
+
+	// Only compress if run length >= 2
+	if (bestLen < 2) {
+		return groups.join(":");
+	}
+
+	const left = groups.slice(0, bestStart).join(":");
+	const right = groups.slice(bestStart + bestLen).join(":");
+
+	if (left === "" && right === "") return "::";
+	if (left === "") return `::${right}`;
+	if (right === "") return `${left}::`;
+	return `${left}::${right}`;
+}
+
+/**
  * Check whether IPv6 address is valid
  */
 export function isValidIPv6(ipv6: string): boolean {

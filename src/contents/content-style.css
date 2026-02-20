@@ -130,3 +130,160 @@
 	color: #c53030;
 	font-family: "JetBrains Mono", "SF Mono", "Fira Code", "Cascadia Code", monospace;
 }
+
+.ipv6-tooltip .bit-network {
+	text-decoration: underline;
+	text-decoration-thickness: 2px;
+	text-underline-offset: 3px;
+	text-decoration-color: #5b6abf;
+}
+
+.ipv6-tooltip .bit-host {
+	background-color: rgba(197, 48, 48, 0.08);
+	border-radius: 1px;
+}
+
+.ipv6-tooltip .prefix-info {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin-bottom: 12px;
+	font-size: 12px;
+	font-family: "JetBrains Mono", "SF Mono", "Fira Code", "Cascadia Code", monospace;
+}
+
+.ipv6-tooltip .prefix-network {
+	color: #5b6abf;
+	font-weight: 600;
+}
+
+.ipv6-tooltip .prefix-separator {
+	color: #8b92a8;
+}
+
+.ipv6-tooltip .prefix-host {
+	color: #c53030;
+	font-weight: 600;
+}
+
+.ipv6-tooltip .ip-badge {
+	display: inline-block;
+	padding: 2px 8px;
+	border-radius: 9999px;
+	font-size: 11px;
+	font-weight: 600;
+	letter-spacing: 0.02em;
+	text-transform: uppercase;
+	white-space: nowrap;
+}
+
+.ipv6-tooltip .ip-badge-private {
+	background-color: #fef3c7;
+	color: #92400e;
+}
+
+.ipv6-tooltip .ip-badge-public {
+	background-color: #d1fae5;
+	color: #065f46;
+}
+
+.ipv6-tooltip .ip-badge-loopback {
+	background-color: #e0e7ff;
+	color: #3730a3;
+}
+
+.ipv6-tooltip .ip-badge-link-local {
+	background-color: #fce7f3;
+	color: #9d174d;
+}
+
+.ipv6-tooltip .ip-badge-reserved {
+	background-color: #eef0f6;
+	color: #6b7394;
+}
+
+.ipv6-tooltip .ip-badge-multicast {
+	background-color: #ede9fe;
+	color: #5b21b6;
+}
+
+.ipv6-tooltip .multi-format-details {
+	margin-top: 12px;
+	border-top: 1px solid #e2e4ed;
+	padding-top: 8px;
+}
+
+.ipv6-tooltip .multi-format-summary {
+	cursor: pointer;
+	font-size: 12px;
+	font-weight: 600;
+	color: #4a5068;
+	letter-spacing: 0.02em;
+	text-transform: uppercase;
+	padding: 4px 0;
+	user-select: none;
+}
+
+.ipv6-tooltip .multi-format-summary:hover {
+	color: #1a1d26;
+}
+
+.ipv6-tooltip .multi-format-block {
+	margin-top: 8px;
+	margin-bottom: 8px;
+}
+
+.ipv6-tooltip .multi-format-block:last-child {
+	margin-bottom: 0;
+}
+
+.ipv6-tooltip .multi-format-label {
+	font-size: 11px;
+	font-weight: 600;
+	color: #4a5068;
+	letter-spacing: 0.02em;
+	text-transform: uppercase;
+	margin-bottom: 4px;
+}
+
+.ipv6-tooltip .multi-format-table {
+	width: 100%;
+	border-collapse: collapse;
+	font-family: "JetBrains Mono", "SF Mono", "Fira Code", "Cascadia Code", monospace;
+	font-size: 11px;
+	background-color: #ffffff;
+	border: 1px solid #e2e4ed;
+	border-radius: 8px;
+	overflow: hidden;
+}
+
+.ipv6-tooltip .multi-format-table th {
+	background-color: #eef0f6;
+	color: #4a5068;
+	font-weight: 600;
+	font-size: 10px;
+	text-transform: uppercase;
+	letter-spacing: 0.02em;
+	padding: 6px 12px;
+	text-align: left;
+	border-bottom: 1px solid #e2e4ed;
+}
+
+.ipv6-tooltip .multi-format-table td {
+	padding: 4px 12px;
+	border-bottom: 1px solid #eceef5;
+	color: #1a1d26;
+}
+
+.ipv6-tooltip .multi-format-table tr:last-child td {
+	border-bottom: none;
+}
+
+.ipv6-tooltip .multi-format-index {
+	color: #8b92a8;
+	width: 30px;
+}
+
+.ipv6-tooltip .multi-format-binary {
+	letter-spacing: 0.5px;
+}
