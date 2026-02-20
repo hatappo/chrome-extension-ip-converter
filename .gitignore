@@ -37,7 +37,7 @@ dist/
 keys.json
 
 # typescript
-.tsbuildinfo
+*.tsbuildinfo
 
 # store reject files
 store/reject/
