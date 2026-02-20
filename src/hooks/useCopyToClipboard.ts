@@ -3,8 +3,8 @@ import { useState } from "react";
 const COPY_SUCCESS_DURATION = 2000; // ms
 
 /**
- * クリップボードにコピーする機能を提供するカスタムフック
- * @returns コピー機能とコピー成功状態
+ * Custom hook that provides clipboard copy functionality
+ * @returns Copy function and copy success state
  */
 export function useCopyToClipboard() {
 	const [isCopied, setIsCopied] = useState(false);

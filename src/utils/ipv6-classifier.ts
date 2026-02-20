@@ -75,7 +75,7 @@ const IPv6_CLASSIFICATIONS = [
 ];
 
 /**
- * 正規化されたIPv6アドレスの分類を判定する
+ * Classify a normalized IPv6 address
  */
 export function classifyIPv6(normalizedIPv6: string): IPv6Classification | null {
 	for (const classification of IPv6_CLASSIFICATIONS) {

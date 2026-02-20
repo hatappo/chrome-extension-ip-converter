@@ -1,6 +1,6 @@
 /* IPv6 Extension Styles */
 
-/* リセット */
+/* Reset */
 * {
 	box-sizing: border-box;
 }
@@ -11,18 +11,18 @@ body {
 	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
-/* ビット表記の色分け */
+/* Color coding for bit notation */
 .ipv6-bit-zero {
-	color: #2563eb; /* 青色 */
+	color: #2563eb; /* Blue */
 	font-family: monospace;
 }
 
 .ipv6-bit-one {
-	color: #dc2626; /* 赤色 */
+	color: #dc2626; /* Red */
 	font-family: monospace;
 }
 
-/* ツールチップスタイル */
+/* Tooltip styles */
 .ipv6-tooltip {
 	position: fixed;
 	background: linear-gradient(to bottom right, #eff6ff, #e0e7ff);
@@ -38,7 +38,7 @@ body {
 	max-width: 750px;
 	font-size: 14px;
 	line-height: 1.5;
-	/* カーソル移動しやすくするための非表示の上部パディング */
+	/* Invisible top padding to make cursor transition easier */
 	margin-top: -2px;
 	padding-top: 18px;
 }
@@ -53,7 +53,7 @@ body {
 	font-size: 12px;
 }
 
-/* ツールチップヘッダー */
+/* Tooltip header */
 .tooltip-header {
 	display: flex;
 	justify-content: space-between;
@@ -61,7 +61,7 @@ body {
 	margin-bottom: 8px;
 }
 
-/* ツールチップ分類ヘッダー */
+/* Tooltip classification header */
 .tooltip-classification-header {
 	display: flex;
 	justify-content: space-between;
@@ -69,7 +69,7 @@ body {
 	margin-bottom: 12px;
 }
 
-/* ツールチップビットコンテナ */
+/* Tooltip bit container */
 .tooltip-bits-container {
 	background-color: white;
 	border-radius: 6px;
@@ -77,7 +77,7 @@ body {
 	border: 1px solid #e5e7eb;
 }
 
-/* ツールチップ内の2行表示スタイル */
+/* Line display styles inside tooltip */
 .tooltip-line {
 	display: flex;
 	margin-bottom: 6px;
@@ -105,7 +105,7 @@ body {
 	text-align: left;
 }
 
-/* ポップアップスタイル */
+/* Popup styles */
 .popup-container {
 	display: flex;
 	flex-direction: column;
@@ -238,7 +238,7 @@ body {
 	font-size: 11px;
 	line-height: 1.6;
 	overflow-x: auto;
-	position: relative; /* 子要素の絶対配置のため */
+	position: relative; /* For absolute positioning of child elements */
 }
 
 .bits-line {
@@ -273,7 +273,7 @@ body {
 	margin-right: 6px;
 }
 
-/* ツールチップバリアント用のスタイル */
+/* Tooltip variant styles */
 .bits-display.tooltip-variant {
 	font-size: 11px;
 	line-height: 1.4;
@@ -326,7 +326,7 @@ body {
 	color: #6b7280;
 }
 
-/* 分類情報の表示スタイル */
+/* Classification display styles */
 .classification-header {
 	display: flex;
 	justify-content: space-between;
@@ -359,7 +359,7 @@ body {
 	margin-top: 2px;
 }
 
-/* ツールチップ内の分類表示 */
+/* Classification display inside tooltip */
 .tooltip-classification {
 	padding: 8px 12px;
 	background-color: rgba(243, 244, 246, 0.9);
@@ -383,7 +383,7 @@ body {
 	margin-top: 2px;
 }
 
-/* Copyボタンのスタイル */
+/* Copy button styles */
 .copy-button-container {
 	position: absolute;
 	top: 0;
@@ -408,7 +408,7 @@ body {
 	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
-/* オプション画面のスタイル */
+/* Options page styles */
 .options-container {
 	max-width: 800px;
 	margin: 0 auto;

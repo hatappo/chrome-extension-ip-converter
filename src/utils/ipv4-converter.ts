@@ -1,12 +1,12 @@
 import ipRegex from "ip-regex";
 
-// IPv4アドレスの正規表現パターン（ip-regexパッケージを使用）
+// IPv4 regex pattern (ip-regex package)
 export const IPV4_PATTERN = ipRegex.v4({ exact: true });
 
 /**
- * IPv4アドレスの検証
- * @param address - 検証するアドレス文字列
- * @returns 有効なIPv4アドレスの場合true
+ * Validate IPv4 address
+ * @param address - Address string to validate
+ * @returns true if the address is a valid IPv4 address
  */
 export function isValidIPv4(address: string): boolean {
 	if (!address || typeof address !== "string") {
@@ -16,9 +16,9 @@ export function isValidIPv4(address: string): boolean {
 }
 
 /**
- * IPv4アドレスをビット表記に変換
- * @param ipv4 - IPv4アドレス文字列
- * @returns 32ビットのバイナリ文字列（コロン区切りなし）
+ * Convert IPv4 address to bit notation
+ * @param ipv4 - IPv4 address string
+ * @returns 32-bit binary string (without colon separators)
  */
 export function ipv4ToBits(ipv4: string): string {
 	const trimmed = ipv4.trim();
@@ -32,6 +32,6 @@ export function ipv4ToBits(ipv4: string): string {
 		return num.toString(2).padStart(8, "0");
 	});
 
-	// 32ビットを返す（IPv6形式の表示時に最初の1行に収まるように）
+	// Return 32 bits (fits into the first line in IPv6-style display)
 	return bits.join("");
 }

@@ -2,14 +2,14 @@ import { addSpacingToBits, formatBitsToLines, getBitColorClass } from "./bit-for
 import type { IPv6Classification } from "./ipv6-classifier";
 
 /**
- * ツールチップ用のHTMLを生成
+ * Generate tooltip HTML
  */
 export function generateTooltipHTML(bits: string, classification?: IPv6Classification): string {
 	const lines = formatBitsToLines(bits);
 
 	let html = "";
 
-	// 分類情報を追加
+	// Add classification info
 	if (classification) {
 		html += `<div class="tooltip-classification">`;
 		html += `<div class="classification-type">${classification.type}</div>`;

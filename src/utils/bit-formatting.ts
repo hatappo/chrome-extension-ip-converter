@@ -1,4 +1,4 @@
-// ビット表示の共通ユーティリティ関数
+// Shared utility functions for bit display
 
 export interface BitDisplayLine {
 	lineNumber: number;
@@ -6,8 +6,8 @@ export interface BitDisplayLine {
 }
 
 /**
- * IPv6ビット文字列を32ビットずつ4行に分割
- * IPv4もIPv6射影アドレスとして同様に処理
+ * Split an IPv6 bit string into 4 lines of 32 bits each
+ * IPv4 is handled the same way as an IPv4-mapped IPv6 address
  */
 export function formatBitsToLines(bits: string): BitDisplayLine[] {
 	const segments = bits.split(":");
@@ -27,14 +27,14 @@ export function formatBitsToLines(bits: string): BitDisplayLine[] {
 }
 
 /**
- * ビットの値に応じて色分けCSSクラスを返す
+ * Return color CSS class for the given bit value
  */
 export function getBitColorClass(bit: string): string {
 	return bit === "0" ? "ipv6-bit-zero" : bit === "1" ? "ipv6-bit-one" : "";
 }
 
 /**
- * ビット文字列に8ビットごとのスペースを追加
+ * Add a space every 8 bits in a bit string
  */
 export function addSpacingToBits(bits: string): string {
 	return bits

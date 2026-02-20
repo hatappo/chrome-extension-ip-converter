@@ -40,7 +40,7 @@ describe("isValidIPAddress", () => {
 describe("ipAddressToBits", () => {
 	it("IPv4アドレスをIPv4射影アドレス形式で正しく変換する", () => {
 		const result = ipAddressToBits("192.168.1.1");
-		// IPv4射影アドレス形式: 最初の80ビット(5セグメント)は0、次の16ビットは1、最後の32ビットがIPv4
+		// IPv4-mapped format: first 80 bits (5 segments) are 0, next 16 bits are 1, last 32 bits are IPv4
 		expect(result).toBe(
 			"0000000000000000:0000000000000000:0000000000000000:0000000000000000:0000000000000000:1111111111111111:1100000010101000:0000000100000001",
 		);
@@ -48,7 +48,7 @@ describe("ipAddressToBits", () => {
 
 	it("IPv6アドレスを正しく変換する", () => {
 		const result = ipAddressToBits("::1");
-		// IPv6の::1は最後の1ビットのみ1
+		// In IPv6 ::1, only the last bit is 1
 		expect(result.endsWith("0000000000000001")).toBe(true);
 	});
 
@@ -67,7 +67,7 @@ describe("detectAndConvertIP", () => {
 		expect(result?.binary).toBe(
 			"0000000000000000:0000000000000000:0000000000000000:0000000000000000:0000000000000000:1111111111111111:1100000010101000:0000000100000001",
 		);
-		// IPv4はIPv4射影アドレスとして分類される
+		// IPv4 is classified as an IPv4-mapped address
 		expect(result?.classification?.type.toLowerCase()).toMatch(/ipv4/i);
 	});
 
@@ -77,7 +77,7 @@ describe("detectAndConvertIP", () => {
 		expect(result?.address).toBe("2001:db8::1");
 		expect(result?.type).toBe("ipv6");
 		expect(result?.binary).toContain(":");
-		// グローバルユニキャストアドレスとして分類される
+		// It is classified as a global unicast address
 		expect(result?.classification?.type.toLowerCase()).toMatch(/global unicast/i);
 	});
 

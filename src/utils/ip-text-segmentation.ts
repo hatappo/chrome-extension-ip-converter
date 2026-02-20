@@ -17,8 +17,8 @@ interface IPSegment {
 export type IPTextSegment = TextSegment | IPSegment;
 
 /**
- * テキストを「通常文字列」と「有効なIPアドレス」に分割する。
- * インデックスは元文字列基準で扱い、複数IPを含むケースでも順序を維持する。
+ * Split text into "plain text" and "valid IP address" segments.
+ * Indices are based on the original string and order is preserved even with multiple IPs.
  */
 export function splitTextByIPAddresses(text: string): IPTextSegment[] {
 	if (!text) {

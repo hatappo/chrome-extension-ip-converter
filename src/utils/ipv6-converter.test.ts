@@ -135,13 +135,13 @@ describe("IPv6 Converter", () => {
 
 		it("should not match invalid IPv6 addresses with exact match", () => {
 			const invalidAddresses = [
-				"192.168.1.1", // IPv4アドレス
-				"invalid", // 文字列
-				"", // 空文字列
-				"gggg::1", // 無効なセグメント
-				"2001:db8:::1", // 不正な::の使用
-				"2001:db8:85a3:0:0:8a2e:370:7334:extra", // 余分なセグメント
-				"::1::2", // 複数の::
+				"192.168.1.1", // IPv4 address
+				"invalid", // plain string
+				"", // empty string
+				"gggg::1", // invalid segment
+				"2001:db8:::1", // invalid :: usage
+				"2001:db8:85a3:0:0:8a2e:370:7334:extra", // extra segment
+				"::1::2", // multiple ::
 			];
 
 			invalidAddresses.forEach((address) => {
@@ -151,7 +151,7 @@ describe("IPv6 Converter", () => {
 
 		it("should not match IPv6 addresses with surrounding text", () => {
 			const text = "Server at 2001:db8::1 is responding";
-			expect(IPV6_PATTERN.test(text)).toBe(false); // exact match のため全体と一致しない
+			expect(IPV6_PATTERN.test(text)).toBe(false); // Does not match full string due to exact-match mode
 		});
 	});
 });

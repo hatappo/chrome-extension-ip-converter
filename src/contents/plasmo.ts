@@ -14,17 +14,17 @@ export const config: PlasmoCSConfig = {
 const storage = new Storage();
 const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
 
-// ビット文字列から実際にコピーする文字列を取得
+// Extract the actual binary string to copy from bit notation
 function getBinaryStringForCopy(bitsNotation: string, addressType: "ipv4" | "ipv6"): string {
 	const segments = bitsNotation.split(":");
 	return addressType === "ipv4"
 		? segments
 				.slice(0, 2)
-				.join("") // IPv4: 最初の32ビット
-		: segments.join(""); // IPv6: 全128ビット
+				.join("") // IPv4: first 32 bits
+		: segments.join(""); // IPv6: full 128 bits
 }
 
-// Copyボタンを作成
+// Create copy button
 function createCopyButton(bitsNotation: string, addressType: "ipv4" | "ipv6"): HTMLButtonElement {
 	const button = document.createElement("button");
 	button.textContent = "Copy";
@@ -48,7 +48,7 @@ function createCopyButton(bitsNotation: string, addressType: "ipv4" | "ipv6"): H
 	return button;
 }
 
-// ツールチップを作成する関数
+// Create tooltip element
 function createTooltip(ipInfo: IPInfo): HTMLElement {
 	const tooltip = document.createElement("div");
 	tooltip.className = "ipv6-tooltip";
@@ -56,7 +56,7 @@ function createTooltip(ipInfo: IPInfo): HTMLElement {
 
 	const label = ipInfo.type === "ipv4" ? "IPv4 Binary:" : "IPv6 Binary:";
 
-	// ヘッダー部分（ラベルとコピーボタン）
+	// Header area (label + copy button)
 	const header = document.createElement("div");
 	header.className = "tooltip-header";
 
@@ -65,7 +65,7 @@ function createTooltip(ipInfo: IPInfo): HTMLElement {
 	labelDiv.textContent = label;
 	header.appendChild(labelDiv);
 
-	// 分類情報とCopyボタンのコンテナ
+	// Container for classification info and copy button
 	if (ipInfo.classification) {
 		const classificationHeader = document.createElement("div");
 		classificationHeader.className = "tooltip-classification-header";
@@ -90,7 +90,7 @@ function createTooltip(ipInfo: IPInfo): HTMLElement {
 		tooltip.appendChild(header);
 	}
 
-	// ビット表示部分
+	// Bit display area
 	const bitsContainer = document.createElement("div");
 	bitsContainer.className = "tooltip-bits-container";
 	const lines = formatBitsToLines(ipInfo.binary);
@@ -124,7 +124,7 @@ function createTooltip(ipInfo: IPInfo): HTMLElement {
 	return tooltip;
 }
 
-// IPアドレスを含むspan要素を作成
+// Create span element for detected IP address
 function createIPSpan(ipAddress: string, addressType: "ipv4" | "ipv6"): HTMLSpanElement {
 	const span = document.createElement("span");
 	span.textContent = ipAddress;
@@ -138,7 +138,7 @@ function createIPSpan(ipAddress: string, addressType: "ipv4" | "ipv6"): HTMLSpan
 	return span;
 }
 
-// ツールチップのホバーイベントを設定
+// Set hover events for tooltip
 function setupTooltipHoverEvents(element: HTMLElement, tooltip: HTMLElement): void {
 	let hideTimeout: NodeJS.Timeout;
 
@@ -181,7 +181,7 @@ function shouldSkipElement(element: Element): boolean {
 	return element.namespaceURI === SVG_NAMESPACE;
 }
 
-// テキストノードからIPアドレスを検出してホバー機能を追加する関数
+// Detect IP addresses in a text node and attach hover behavior
 function processTextNode(textNode: Text): void {
 	const parent = textNode.parentElement;
 	if (!parent) return;
@@ -227,7 +227,7 @@ function processTextNode(textNode: Text): void {
 	parent.replaceChild(fragment, textNode);
 }
 
-// DOMツリーを再帰的に処理する関数
+// Recursively process the DOM tree
 function processNode(node: Node): void {
 	if (node.nodeType === Node.TEXT_NODE) {
 		processTextNode(node as Text);
@@ -237,14 +237,14 @@ function processNode(node: Node): void {
 			return;
 		}
 
-		// 子ノードを処理
+		// Process child nodes
 		for (const child of Array.from(node.childNodes)) {
 			processNode(child);
 		}
 	}
 }
 
-// 処理済みの要素をクリアする関数
+// Clear previously processed elements
 function clearProcessedMarkers(): void {
 	const convertedElements = document.querySelectorAll("[data-ip-converted='true']");
 	convertedElements.forEach((element) => {
@@ -257,25 +257,25 @@ function clearProcessedMarkers(): void {
 		element.replaceWith(document.createTextNode(ipAddress));
 	});
 
-	// document.body 直下に追加するコンテキストメニュー由来のツールチップを削除
+	// Remove context-menu tooltips appended directly under document.body
 	const tooltips = document.querySelectorAll(".ipv6-tooltip-context");
 	tooltips.forEach((tooltip) => {
 		tooltip.remove();
 	});
 }
 
-// 初期化
+// Initialization
 async function initializeIPConverter(): Promise<void> {
-	// 設定を確認
+	// Check settings
 	const autoScan = await storage.get<boolean>("autoScan");
 
-	// 自動スキャンが有効な場合のみ処理
+	// Process only when auto-scan is enabled
 	if (autoScan === true) {
 		processNode(document.body);
 	}
 }
 
-// 選択範囲の位置にツールチップを表示する関数
+// Show tooltip near the current text selection
 function showTooltipAtSelection(ipInfo: IPInfo): void {
 	const selection = window.getSelection();
 	if (!selection || selection.rangeCount === 0) return;
@@ -283,7 +283,7 @@ function showTooltipAtSelection(ipInfo: IPInfo): void {
 	const range = selection.getRangeAt(0);
 	const rect = range.getBoundingClientRect();
 
-	// ツールチップを作成
+	// Create tooltip
 	const tooltip = createTooltip(ipInfo);
 	tooltip.style.display = "block";
 	tooltip.style.position = "fixed";
@@ -291,24 +291,24 @@ function showTooltipAtSelection(ipInfo: IPInfo): void {
 	tooltip.style.top = `${rect.bottom + 2}px`;
 	tooltip.style.zIndex = "10001";
 
-	// 既存のコンテキストメニュー由来のツールチップを削除
+	// Remove existing context-menu tooltip
 	const existingTooltip = document.querySelector(".ipv6-tooltip-context");
 	if (existingTooltip) {
 		existingTooltip.remove();
 	}
 
-	// コンテキストメニュー由来であることを示すクラスを追加
+	// Add marker class for context-menu tooltip
 	tooltip.classList.add("ipv6-tooltip-context");
 	document.body.appendChild(tooltip);
 
-	// 10秒後に自動削除
+	// Auto-remove after 10 seconds
 	const autoRemoveTimeout = setTimeout(() => {
 		tooltip.remove();
 	}, 10000);
 
-	// クリックで削除
+	// Remove on click
 	const handleClick = (e: MouseEvent) => {
-		// ツールチップ内のクリックは無視
+		// Ignore clicks inside tooltip
 		if (tooltip.contains(e.target as Node)) return;
 
 		clearTimeout(autoRemoveTimeout);
@@ -316,33 +316,33 @@ function showTooltipAtSelection(ipInfo: IPInfo): void {
 		document.removeEventListener("click", handleClick);
 	};
 
-	// 少し遅延させてイベントを登録（右クリックメニューのクリックを無視するため）
+	// Delay listener registration to ignore right-click menu click
 	setTimeout(() => {
 		document.addEventListener("click", handleClick);
 	}, 100);
 }
 
-// メッセージリスナー - 手動トリガー用
+// Message listener for manual triggers
 chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
 	if (request.action === "scan") {
-		// 既存の処理をクリア
+		// Clear existing processing
 		clearProcessedMarkers();
-		// スキャン実行
+		// Run scan
 		processNode(document.body);
 		sendResponse({ success: true });
 	} else if (request.action === "convertSelection") {
-		// 選択されたテキストからIPアドレスを検出
+		// Detect IP address from selected text
 		const text = request.text;
 		const ipPattern = ipRegex();
 		const matches = text.match(ipPattern);
 
 		if (matches && matches.length > 0) {
-			// 最初に見つかったIPアドレスを変換
+			// Convert the first matched IP address
 			const ipAddress = matches[0];
 			const ipInfo = detectAndConvertIP(ipAddress);
 
 			if (ipInfo) {
-				// ツールチップを表示
+				// Show tooltip
 				showTooltipAtSelection(ipInfo);
 				sendResponse({ success: true });
 			} else {
@@ -355,7 +355,7 @@ chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
 	return true;
 });
 
-// ページ読み込み後に実行
+// Run after page load
 if (document.readyState === "loading") {
 	document.addEventListener("DOMContentLoaded", initializeIPConverter);
 } else {

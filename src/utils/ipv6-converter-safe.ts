@@ -1,18 +1,18 @@
 import ipRegex from "ip-regex";
 
-// タイムアウト付きの安全なIPv6パターンマッチング
-const REGEX_TIMEOUT_MS = 100; // 100ms のタイムアウト
+// Safe IPv6 pattern matching with timeout
+const REGEX_TIMEOUT_MS = 100; // 100ms timeout
 
 /**
- * タイムアウト付きでIPv6アドレスをマッチする
- * ReDoS攻撃を防ぐため、一定時間で処理を中断
+ * Match IPv6 addresses with timeout
+ * Interrupt processing after a fixed time to reduce ReDoS risk
  */
 export function matchIPv6WithTimeout(text: string): string[] | null {
 	const startTime = performance.now();
 	const results: string[] = [];
 
 	try {
-		// テキストが長すぎる場合は事前にチェック
+		// Pre-check for excessively long text
 		if (text.length > 10000) {
 			console.warn("Text too long for IPv6 matching");
 			return null;
@@ -21,7 +21,7 @@ export function matchIPv6WithTimeout(text: string): string[] | null {
 		const matches = text.matchAll(ipRegex.v6());
 
 		for (const match of matches) {
-			// タイムアウトチェック
+			// Timeout check
 			if (performance.now() - startTime > REGEX_TIMEOUT_MS) {
 				console.warn("IPv6 regex matching timeout");
 				return results.length > 0 ? results : null;
@@ -38,17 +38,17 @@ export function matchIPv6WithTimeout(text: string): string[] | null {
 }
 
 /**
- * 文字列を分割して処理することで、ReDoSリスクを軽減
+ * Reduce ReDoS risk by processing text in chunks
  */
 export function matchIPv6InChunks(text: string, chunkSize = 1000): string[] {
 	const results: string[] = [];
 
-	// 改行や空白で分割
+	// Split by newline and whitespace
 	const chunks = text.split(/[\s\n]+/);
 
 	for (const chunk of chunks) {
 		if (chunk.length > chunkSize) {
-			continue; // 長すぎるチャンクはスキップ
+			continue; // Skip oversized chunks
 		}
 
 		const matches = chunk.match(ipRegex.v6());
@@ -57,5 +57,5 @@ export function matchIPv6InChunks(text: string, chunkSize = 1000): string[] {
 		}
 	}
 
-	return [...new Set(results)]; // 重複を除去
+	return [...new Set(results)]; // Remove duplicates
 }

@@ -1,7 +1,7 @@
 // Plasmo Background Service Worker
 export {};
 
-// コンテキストメニューの作成
+// Create context menu
 chrome.runtime.onInstalled.addListener(() => {
 	chrome.contextMenus.create({
 		id: "convertIP",
@@ -10,11 +10,11 @@ chrome.runtime.onInstalled.addListener(() => {
 	});
 });
 
-// コンテキストメニューのクリックハンドラ
+// Context menu click handler
 chrome.contextMenus.onClicked.addListener((info, tab) => {
 	if (info.menuItemId === "convertIP" && info.selectionText && tab?.id) {
-		// 選択されたテキストをcontent scriptに送信
-		// content script側でIPアドレスの検出と変換を行う
+		// Send selected text to content script
+		// IP detection and conversion are handled in the content script
 		chrome.tabs.sendMessage(tab.id, {
 			action: "convertSelection",
 			text: info.selectionText,

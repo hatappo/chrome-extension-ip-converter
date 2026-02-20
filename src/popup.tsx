@@ -41,10 +41,10 @@ function IndexPopup() {
 
 	const handleScan = async () => {
 		try {
-			// 現在のアクティブタブを取得
+			// Get current active tab
 			const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
 			if (tab.id) {
-				// コンテンツスクリプトにスキャンメッセージを送信
+				// Send scan message to content script
 				const response = await chrome.tabs.sendMessage(tab.id, { action: "scan" });
 				if (response?.success) {
 					// Show success feedback in scan message area

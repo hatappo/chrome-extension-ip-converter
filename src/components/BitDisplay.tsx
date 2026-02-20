@@ -10,7 +10,7 @@ interface BitDisplayProps {
 }
 
 /**
- * IPv6ビット表記を4行で表示する共通コンポーネント
+ * Shared component that renders IPv6 bit notation in 4 lines
  */
 export function BitDisplay({ bits, variant = "popup", classification }: BitDisplayProps): React.ReactElement {
 	const lines = formatBitsToLines(bits);

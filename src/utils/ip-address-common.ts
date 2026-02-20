@@ -12,9 +12,9 @@ export interface IPInfo {
 }
 
 /**
- * IPアドレスのタイプを判定
- * @param address - 判定するアドレス文字列
- * @returns アドレスタイプ
+ * Detect the IP address type
+ * @param address - Address string to evaluate
+ * @returns Address type
  */
 export function detectAddressType(address: string): AddressType {
 	if (!address || typeof address !== "string") {
@@ -35,29 +35,29 @@ export function detectAddressType(address: string): AddressType {
 }
 
 /**
- * IPv4/IPv6共通の検証関数
- * @param address - 検証するアドレス文字列
- * @returns 有効なIPアドレスの場合true
+ * Shared IPv4/IPv6 validation function
+ * @param address - Address string to validate
+ * @returns true if the address is a valid IP address
  */
 export function isValidIPAddress(address: string): boolean {
 	return detectAddressType(address) !== "invalid";
 }
 
 /**
- * IPv4/IPv6共通の変換関数
- * @param address - IPアドレス文字列
- * @returns ビット表記文字列
+ * Shared IPv4/IPv6 conversion function
+ * @param address - IP address string
+ * @returns Bit notation string
  */
 export function ipAddressToBits(address: string): string {
 	const type = detectAddressType(address);
 
 	switch (type) {
 		case "ipv4": {
-			// IPv4をIPv6のIPv4射影アドレス形式のビット表現に変換
-			// ::ffff:x.x.x.x の形式なので、最初の96ビットは0、最後の32ビットがIPv4
+			// Convert IPv4 to IPv6 IPv4-mapped address bit representation
+			// In ::ffff:x.x.x.x form, the first 96 bits are fixed and the last 32 bits are IPv4
 			const ipv4Bits = ipv4ToBits(address.trim());
-			// 96ビットの0（6セグメント分）+ IPv4の32ビット（2セグメント分）
-			const zeros = "0000000000000000"; // 16ビットの0
+			// 96 bits of 0 (6 segments) + 32 bits of IPv4 (2 segments)
+			const zeros = "0000000000000000"; // 16-bit zero
 			const segment7 = ipv4Bits.substring(0, 16);
 			const segment8 = ipv4Bits.substring(16, 32);
 			return `${zeros}:${zeros}:${zeros}:${zeros}:${zeros}:1111111111111111:${segment7}:${segment8}`;
@@ -72,9 +72,9 @@ export function ipAddressToBits(address: string): string {
 }
 
 /**
- * IPアドレスを検出して変換情報を返す
- * @param address - IPアドレス文字列
- * @returns IPInfo オブジェクト、無効な場合はnull
+ * Detect and convert an IP address
+ * @param address - IP address string
+ * @returns IPInfo object, or null when invalid
  */
 export function detectAndConvertIP(address: string): IPInfo | null {
 	const type = detectAddressType(address);
@@ -87,10 +87,10 @@ export function detectAndConvertIP(address: string): IPInfo | null {
 		const binary = ipAddressToBits(address);
 		const trimmedAddress = address.trim();
 
-		// IPv4の場合はIPv4射影アドレス形式に変換、IPv6の場合はそのまま正規化
+		// For IPv4, convert to IPv4-mapped IPv6 form; for IPv6, normalize as-is
 		let normalized: string;
 		if (type === "ipv4") {
-			// IPv4をIPv6のIPv4射影アドレス形式に変換
+			// Convert IPv4 to IPv4-mapped IPv6 format
 			const octets = trimmedAddress.split(".");
 			const hex1 = (parseInt(octets[0]) * 256 + parseInt(octets[1])).toString(16).padStart(4, "0");
 			const hex2 = (parseInt(octets[2]) * 256 + parseInt(octets[3])).toString(16).padStart(4, "0");
