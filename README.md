@@ -17,21 +17,21 @@ IPv4/IPv6 アドレスを 16 進数表記からビット表記に変換する Ch
 
 ### 必要な環境
 
-- Volta （Node.js と npm を管理）
+- Volta （Node.js と pnpm を管理）
 - Node.js 24.3.0
-- npm 11.4.2
+- pnpm 10.30.1
 
 ### インストール
 
 ```bash
 # 依存関係をインストール
-npm install
+pnpm install
 ```
 
 ### 開発サーバーの起動
 
 ```bash
-npm run dev
+pnpm dev
 ```
 
 ブラウザを開き、適切な開発ビルドを読み込んでください。
@@ -59,30 +59,30 @@ Chrome ブラウザ（Manifest V3）の場合: `build/chrome-mv3-dev`
 
 ```bash
 # テストを実行
-npm test
+pnpm test
 
 # テストUIを起動
-npm run test:ui
+pnpm test:ui
 ```
 
 ## コード品質管理
 
 ```bash
 # リンターでチェック
-npm run lint
+pnpm lint
 
 # リンターで自動修正
-npm run lint:fix
+pnpm lint:fix
 
 # フォーマッター
-npm run format
+pnpm format
 ```
 
 ## プロダクションビルド
 
 ```bash
-npm run build
-npm run package
+pnpm build
+pnpm package
 ```
 
 このコマンドで拡張機能のプロダクションバンドルが作成され、ストアに公開する準備が整います。
