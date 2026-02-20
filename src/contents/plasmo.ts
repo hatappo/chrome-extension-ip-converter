@@ -18,9 +18,7 @@ const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
 function getBinaryStringForCopy(bitsNotation: string, addressType: "ipv4" | "ipv6"): string {
 	const segments = bitsNotation.split(":");
 	return addressType === "ipv4"
-		? segments
-				.slice(0, 2)
-				.join("") // IPv4: first 32 bits
+		? segments.slice(0, 2).join("") // IPv4: first 32 bits
 		: segments.join(""); // IPv6: full 128 bits
 }
 
@@ -65,28 +63,18 @@ function createTooltip(ipInfo: IPInfo): HTMLElement {
 	labelDiv.textContent = label;
 	header.appendChild(labelDiv);
 
-	// Container for classification info and copy button
+	// Classification info
 	if (ipInfo.classification) {
-		const classificationHeader = document.createElement("div");
-		classificationHeader.className = "tooltip-classification-header";
-
 		const classificationDiv = document.createElement("div");
 		classificationDiv.className = "tooltip-classification";
 		classificationDiv.innerHTML = `
 			<div class="classification-type">${ipInfo.classification.type}</div>
 			${ipInfo.classification.description ? `<div class="classification-description">${ipInfo.classification.description}</div>` : ""}
 		`;
-		classificationHeader.appendChild(classificationDiv);
-
-		const copyButton = createCopyButton(ipInfo.binary, ipInfo.type as "ipv4" | "ipv6");
-		copyButton.style.cssText = "position: static;";
-		classificationHeader.appendChild(copyButton);
 
 		tooltip.appendChild(header);
-		tooltip.appendChild(classificationHeader);
+		tooltip.appendChild(classificationDiv);
 	} else {
-		const copyButton = createCopyButton(ipInfo.binary, ipInfo.type as "ipv4" | "ipv6");
-		header.appendChild(copyButton);
 		tooltip.appendChild(header);
 	}
 
@@ -120,6 +108,11 @@ function createTooltip(ipInfo: IPInfo): HTMLElement {
 	});
 
 	tooltip.appendChild(bitsContainer);
+
+	// Copy button at the bottom
+	const copyButton = createCopyButton(ipInfo.binary, ipInfo.type as "ipv4" | "ipv6");
+	copyButton.style.cssText = "";
+	tooltip.appendChild(copyButton);
 
 	return tooltip;
 }

@@ -23,21 +23,12 @@ export function BitDisplay({ bits, variant = "popup", classification }: BitDispl
 
 	return (
 		<div className={`bits-display ${variant === "tooltip" ? "tooltip-variant" : ""}`}>
-			<div className="classification-header">
-				{classification ? (
-					<div className="classification-info">
-						<div className="classification-type">{classification.type}</div>
-						{classification.description && (
-							<div className="classification-description">{classification.description}</div>
-						)}
-					</div>
-				) : (
-					<div className="classification-info-empty" />
-				)}
-				<button type="button" onClick={handleCopy} className="copy-button" title="Copy binary string">
-					{isCopied ? "Copied!" : "Copy"}
-				</button>
-			</div>
+			{classification && (
+				<div className="classification-info">
+					<div className="classification-type">{classification.type}</div>
+					{classification.description && <div className="classification-description">{classification.description}</div>}
+				</div>
+			)}
 			{lines.map((line, lineIndex) => (
 				<div key={`line-${lineIndex}-${line.bits.slice(0, 4)}`} className="bits-line">
 					<span className="line-number">{line.lineNumber}:</span>
@@ -53,6 +44,9 @@ export function BitDisplay({ bits, variant = "popup", classification }: BitDispl
 					</div>
 				</div>
 			))}
+			<button type="button" onClick={handleCopy} className="copy-button" title="Copy binary string">
+				{isCopied ? "Copied!" : "Copy"}
+			</button>
 		</div>
 	);
 }
