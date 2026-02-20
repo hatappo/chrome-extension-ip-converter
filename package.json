@@ -1,13 +1,14 @@
 {
 	"name": "ip-converter",
 	"displayName": "Binary Network Visualizer",
-	"version": "0.3.0",
+	"version": "0.3.1",
 	"description": "Educational tool for visualizing network addresses as color-coded binary patterns",
 	"author": "",
 	"scripts": {
 		"dev": "plasmo dev",
 		"build": "plasmo build",
-		"package": "pnpm build && plasmo package",
+		"package:zip": "pnpm build && plasmo package",
+		"package:crx": "pnpm build && bash ./script/package-crx.sh",
 		"test": "vitest",
 		"test:ui": "vitest --ui",
 		"lint": "biome check .",
@@ -35,7 +36,7 @@
 		]
 	},
 	"devDependencies": {
-		"@biomejs/biome": "2.1.1",
+		"@biomejs/biome": "2.4.3",
 		"@testing-library/react": "16.3.0",
 		"@types/chrome": "0.0.332",
 		"@types/node": "24.0.13",
