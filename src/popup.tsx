@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import "./style.css";
+import "./extension-ui.css";
 import { BitDisplay } from "./components/BitDisplay";
 import { detectAndConvertIP } from "./utils/ip-address-common";
 import type { IPv6Classification } from "./utils/ipv6-classifier";

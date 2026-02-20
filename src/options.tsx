@@ -1,5 +1,5 @@
 import { useStorage } from "@plasmohq/storage/hook";
-import "./style.css";
+import "./extension-ui.css";
 
 function IndexOptions() {
 	// Use Plasmo storage hook with default value of false

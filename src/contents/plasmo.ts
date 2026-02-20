@@ -4,13 +4,14 @@ import type { PlasmoCSConfig } from "plasmo";
 import { addSpacingToBits, formatBitsToLines, getBitColorClass } from "../utils/bit-formatting";
 import type { IPInfo } from "../utils/ip-address-common";
 import { detectAddressType, detectAndConvertIP } from "../utils/ip-address-common";
-import "../style.css";
+import "./content-style.css";
 
 export const config: PlasmoCSConfig = {
 	matches: ["https://*/*", "http://*/*"],
 };
 
 const storage = new Storage();
+const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
 
 // ビット文字列から実際にコピーする文字列を取得
 function getBinaryStringForCopy(bitsNotation: string, addressType: "ipv4" | "ipv6"): string {
@@ -164,6 +165,20 @@ function setupTooltipHoverEvents(element: HTMLElement, tooltip: HTMLElement): vo
 	tooltip.addEventListener("mouseleave", hideTooltip);
 }
 
+function shouldSkipElement(element: Element): boolean {
+	if (
+		element.matches(".ipv6-tooltip, .ipv6-tooltip-context") ||
+		element.tagName === "SCRIPT" ||
+		element.tagName === "STYLE" ||
+		element.tagName === "NOSCRIPT" ||
+		element.tagName === "TEMPLATE"
+	) {
+		return true;
+	}
+
+	return element.namespaceURI === SVG_NAMESPACE;
+}
+
 // テキストノードからIPアドレスを検出してホバー機能を追加する関数
 function processTextNode(textNode: Text): void {
 	const text = textNode.textContent;
@@ -176,6 +191,8 @@ function processTextNode(textNode: Text): void {
 
 	const parent = textNode.parentElement;
 	if (!parent) return;
+
+	if (shouldSkipElement(parent)) return;
 
 	// 既に処理済みかチェック
 	if (parent.hasAttribute("data-ip-processed")) return;
@@ -232,9 +249,8 @@ function processNode(node: Node): void {
 	if (node.nodeType === Node.TEXT_NODE) {
 		processTextNode(node as Text);
 	} else if (node.nodeType === Node.ELEMENT_NODE) {
-		// スクリプトタグやスタイルタグは処理しない
 		const element = node as Element;
-		if (element.tagName === "SCRIPT" || element.tagName === "STYLE") {
+		if (shouldSkipElement(element)) {
 			return;
 		}
 

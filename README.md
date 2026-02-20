@@ -109,7 +109,7 @@ src/
 │   └── setup.ts                  # テストセットアップ
 ├── options.tsx                   # 設定ページUI
 ├── popup.tsx                     # ポップアップUI
-└── style.css                     # 共通スタイル
+└── extension-ui.css              # 拡張UIスタイル（popup/options）
 
 store/                            # Chrome Web Store用アセット
 ├── description.txt               # ストア説明文
